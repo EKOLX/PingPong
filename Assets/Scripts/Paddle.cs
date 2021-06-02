@@ -6,18 +6,50 @@ public class Paddle : MonoBehaviour
 {
     [SerializeField] private float speed;
 
-    private Rigidbody2D rb;
-    private float movement;
+    private float direction;
+    private float sizeX;
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
+        sizeX = transform.localScale.x;
     }
 
     private void Update()
     {
-        movement = Input.GetAxisRaw(K.horizontal);
+        direction = Input.GetAxisRaw(K.horizontal);
 
-        rb.velocity = new Vector2(movement * speed, rb.velocity.y);
+        // Walls
+        if ((direction < 0 && transform.position.x - sizeX / 2 < GameManager.Instance.bottomLeft.x)
+        || (direction > 0 && transform.position.x + sizeX / 2 > GameManager.Instance.topRight.x))
+        {
+            direction = 0;
+        }
+
+        if (direction != 0)
+        {
+            transform.Translate(direction * speed * Time.deltaTime * Vector2.right);
+        }
     }
+
+    public void SetTo(PaddleLocation location)
+    {
+        Vector2 position = Vector2.zero;
+
+        switch (location)
+        {
+            case PaddleLocation.Top:
+                position = new Vector2(0, GameManager.Instance.topRight.y);
+                position -= Vector2.up * transform.localScale.y / 2;
+                transform.name = "PaddleTop";
+                break;
+            case PaddleLocation.Bottom:
+                position = new Vector2(0, GameManager.Instance.bottomLeft.y);
+                position -= Vector2.down * transform.localScale.y / 2;
+                transform.name = "PaddleBottom";
+                break;
+        }
+
+        transform.position = position;
+    }
+
 }
