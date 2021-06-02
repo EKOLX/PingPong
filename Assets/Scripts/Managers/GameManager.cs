@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -9,14 +10,15 @@ public class GameManager : MonoBehaviour
 
     [HideInInspector] public Vector2 bottomLeft;
     [HideInInspector] public Vector2 topRight;
+    [HideInInspector] public int playerScore, opponentScore;
 
-    [SerializeField] private TextMeshProUGUI labelScore;
+    [SerializeField] private UIManager uiManager;
     [SerializeField] private Ball ballPrefab;
     [SerializeField] private Paddle paddlePrefab;
     [SerializeField] private bool resetBallWithFeatures;
 
     private Ball ball;
-    private int playerScore, opponentScore;
+    private int timer = 3;
 
     private void Awake()
     {
@@ -35,11 +37,15 @@ public class GameManager : MonoBehaviour
         bottomLeft = Camera.main.ScreenToWorldPoint(new Vector2(0, 0));
         topRight = Camera.main.ScreenToWorldPoint(new Vector2(Screen.width, Screen.height));
 
-        // Can be stored in json
-        playerScore = PlayerPrefs.GetInt(K.playerScore);
-        opponentScore = PlayerPrefs.GetInt(K.opponentScore);
+        uiManager.onColorSet += ColorSet;
 
-        UpdateUI(playerScore, opponentScore);
+        // Can be stored in json
+        playerScore = PlayerPrefs.GetInt(K.PrefKey.playerScore);
+        opponentScore = PlayerPrefs.GetInt(K.PrefKey.opponentScore);
+
+        uiManager.UpdateScore(playerScore, opponentScore);
+
+        StartCoroutine(RunBall());
 
         InstantiateObjects();
     }
@@ -56,7 +62,7 @@ public class GameManager : MonoBehaviour
                 break;
         }
 
-        UpdateUI(playerScore, opponentScore);
+        uiManager.UpdateScore(playerScore, opponentScore);
 
         ball.Reset(resetBallWithFeatures);
     }
@@ -73,15 +79,28 @@ public class GameManager : MonoBehaviour
         paddle2.SetTo(PaddleLocation.Bottom);
     }
 
-    private void UpdateUI(int playerScore, int opponentScore)
+    private IEnumerator RunBall()
     {
-        labelScore.text = $"{playerScore} : {opponentScore}";
+        while (timer > 0)
+        {
+            yield return new WaitForSeconds(1.0f);
+            uiManager.UpdateTimer(--timer);
+        }
+
+        ball.Run();
+    }
+
+    private void ColorSet(Color newColor)
+    {
+        ball.SetColor(newColor);
     }
 
     private void OnDestroy()
     {
-        PlayerPrefs.SetInt(K.playerScore, playerScore);
-        PlayerPrefs.SetInt(K.opponentScore, opponentScore);
+        uiManager.onColorSet -= ColorSet;
+
+        PlayerPrefs.SetInt(K.PrefKey.playerScore, playerScore);
+        PlayerPrefs.SetInt(K.PrefKey.opponentScore, opponentScore);
     }
 
 }

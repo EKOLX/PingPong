@@ -4,14 +4,15 @@ public class Ball : MonoBehaviour
 {
     [SerializeField] private float speed = 6.0f;
 
+    private SpriteRenderer spriteRenderer;
     private Vector2 direction;
     private float radius;
 
     private void Start()
     {
-        radius = transform.localScale.x / 2;
+        spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
 
-        Run();
+        radius = transform.localScale.x / 2;
     }
 
     private void Update()
@@ -38,10 +39,18 @@ public class Ball : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag(K.paddle))
+        if (collision.gameObject.CompareTag(K.TagKey.paddle))
         {
             direction.y = -direction.y;
         }
+    }
+
+    public void Run()
+    {
+        float x = Random.Range(0, 2) == 0 ? -1 : 1;
+        float y = Random.Range(0, 2) == 0 ? -1 : 1;
+
+        direction = new Vector2(x, y).normalized;
     }
 
     public void Reset(bool withFeatures = false)
@@ -57,12 +66,9 @@ public class Ball : MonoBehaviour
         Run();
     }
 
-    private void Run()
+    public void SetColor(Color color)
     {
-        float x = Random.Range(0, 2) == 0 ? -1 : 1;
-        float y = Random.Range(0, 2) == 0 ? -1 : 1;
-
-        direction = new Vector2(x, y).normalized;
+        spriteRenderer.color = color;
     }
 
 }
