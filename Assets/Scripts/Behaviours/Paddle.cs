@@ -14,7 +14,7 @@ public class Paddle : MonoBehaviour
 
     private void Update()
     {
-        direction = Input.GetAxisRaw(K.horizontal);
+        direction = GetDirection();
 
         // Walls
         if ((direction < 0 && transform.position.x - sizeX / 2 < GameManager.Instance.bottomLeft.x)
@@ -48,6 +48,31 @@ public class Paddle : MonoBehaviour
         }
 
         transform.position = position;
+    }
+
+    private float GetDirection()
+    {
+#if UNITY_EDITOR
+        return Input.GetAxisRaw(K.horizontal);
+#endif
+
+#if UNITY_IOS || UNITY_ANDROID
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.touches[0];
+
+            if (touch.position.x < Screen.width / 2)
+            {
+                return -1; // Left side touch
+            }
+            else if (touch.position.x > Screen.width / 2)
+            {
+                return 1; // Right side touch
+            }
+        }
+#endif
+
+        return 0;
     }
 
 }
